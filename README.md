@@ -9,7 +9,8 @@ grunt.initConfig({
 		options: {
 			list: false, // if true, export as array
 			trim: true, // if true, trim indents in template
-			header: "module.exports = " // header string for dest file
+			base: "./templates", // template root directory
+			template: "module.exports = <%=data %>" // template for dest file
 		},
 
 		bundle: {

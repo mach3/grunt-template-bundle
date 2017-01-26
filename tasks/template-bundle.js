@@ -4,12 +4,13 @@ module.exports = function(grunt){
 	var _ = grunt.util._,
 		path = require("path");
 
-	grunt.registerMultiTask("template_bundle", "", function(){
+	grunt.registerMultiTask("template_bundle", "bundle template files as javascript file", function(){
 
 		var o = this.options({
 			list: false,
 			trim: true,
-			header: "module.exports = "
+			base: "./templates",
+			template: "module.exports = <%=data %>;"
 		});
 
 		this.files.forEach(function(file){
@@ -18,7 +19,11 @@ module.exports = function(grunt){
 			file.src.forEach(function(name){
 				var key, value;
 				value = grunt.file.read(name);
-				key = path.parse(name).name;
+				key = (function(name){
+					var p = path.parse(path.relative(o.base, name));
+					return path.join(p.dir, p.name);
+				}(name));
+
 				data[key] = o.trim ? value.replace(/\n\s*/g, "") : value;
 			});
 
@@ -32,7 +37,10 @@ module.exports = function(grunt){
 				data = list;
 			}
 
-			data = o.header + JSON.stringify(data);
+			data = grunt.template.process(
+				o.template,
+				{ data: { data: JSON.stringify(data) } }
+			);
 
 			grunt.file.write(file.dest, data);
 			grunt.log.writeln("Bundle > " + file.dest);
